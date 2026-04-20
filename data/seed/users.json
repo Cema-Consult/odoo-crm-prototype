@@ -1,0 +1,7 @@
+[
+  { "id": "u_anna", "name": "Anna Lindqvist", "email": "anna@studio.co", "avatar": "AL" },
+  { "id": "u_mikael", "name": "Mikael Eriksson", "email": "mikael@studio.co", "avatar": "ME" },
+  { "id": "u_sara", "name": "Sara Nielsen", "email": "sara@studio.co", "avatar": "SN" },
+  { "id": "u_jonas", "name": "Jonas Berg", "email": "jonas@studio.co", "avatar": "JB" },
+  { "id": "u_lena", "name": "Lena Kowalski", "email": "lena@studio.co", "avatar": "LK" }
+]

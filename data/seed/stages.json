@@ -1,0 +1,7 @@
+[
+  { "id": "s_new", "name": "New", "sequence": 1, "fold": false },
+  { "id": "s_qualified", "name": "Qualified", "sequence": 2, "fold": false },
+  { "id": "s_proposition", "name": "Proposition", "sequence": 3, "fold": false },
+  { "id": "s_won", "name": "Won", "sequence": 4, "fold": false },
+  { "id": "s_lost", "name": "Lost", "sequence": 5, "fold": true }
+]
