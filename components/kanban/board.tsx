@@ -12,9 +12,14 @@ export function KanbanBoard({ stages, opportunities, contacts, onDrop }: {
 
   const handleDragEnd = (e: DragEndEvent) => {
     if (!e.over) return;
-    const stageId = String(e.over.id);
+    const overId = String(e.over.id);
     const opp = opportunities.find(o => o.id === e.active.id);
-    if (!opp || opp.stageId === stageId) return;
+    if (!opp) return;
+    // overId may be a stage ID (dropped on empty column) or an opportunity ID
+    // (dropped on an existing card). In the latter case, resolve to that card's stage.
+    const overOpp = opportunities.find(o => o.id === overId);
+    const stageId = overOpp ? overOpp.stageId : overId;
+    if (opp.stageId === stageId) return;
     onDrop(opp.id, stageId);
   };
 
