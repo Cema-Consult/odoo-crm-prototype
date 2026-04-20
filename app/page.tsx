@@ -1,4 +1,2 @@
-import { Button } from "@/components/ui/button";
-export default function Home() {
-  return <div className="p-8"><Button>Hello</Button></div>;
-}
+import { redirect } from "next/navigation";
+export default function RootRedirect() { redirect("/dashboard"); }
