@@ -1,3 +1,4 @@
+import { Button } from "@/components/ui/button";
 export default function Home() {
-  return <div className="p-8 text-text">Tailwind + theme vars wired.</div>;
+  return <div className="p-8"><Button>Hello</Button></div>;
 }
