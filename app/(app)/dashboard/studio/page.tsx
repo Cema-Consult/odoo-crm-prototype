@@ -78,7 +78,8 @@ function WidgetStudio() {
     <div className="p-6 h-full">
       <div className="flex items-center gap-2 text-sm text-text-muted mb-4">
         <Link href="/dashboard" className="hover:text-text">Dashboard</Link>
-        <span>/</span><span>Custom widgets</span>
+        <span>/</span>
+        <Link href="/dashboard?tab=custom" className="hover:text-text">Custom widgets</Link>
         <span>/</span><span className="text-text">Studio</span>
       </div>
 
