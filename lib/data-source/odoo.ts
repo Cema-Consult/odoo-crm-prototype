@@ -28,5 +28,13 @@ export function makeOdooDataSource(): DataSource {
       update: () => notImpl("activities.update"),
     },
     dashboard: { summary: () => notImpl("dashboard.summary") },
+    widgets: {
+      list: () => notImpl("widgets.list"),
+      get: () => notImpl("widgets.get"),
+      create: () => notImpl("widgets.create"),
+      update: () => notImpl("widgets.update"),
+      remove: () => notImpl("widgets.remove"),
+      transition: () => notImpl("widgets.transition"),
+    },
   };
 }

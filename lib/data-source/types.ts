@@ -1,12 +1,17 @@
 import type {
   Opportunity, Contact, Stage, Activity, User,
 } from "@/lib/schemas/core";
+import type { WidgetSpec, WidgetState } from "@/lib/schemas/widgets";
 
 export type ListOpportunitiesParams = {
   stage?: string; q?: string; tag?: string; salespersonId?: string;
 };
 export type ListContactsParams = { q?: string; isCompany?: boolean };
 export type ListActivitiesParams = { opportunityId?: string; assignedTo?: string; done?: boolean };
+
+export type ListWidgetsParams = { state?: WidgetState; createdBy?: string };
+
+export type TransitionContext = { by: string; isAdmin: boolean };
 
 export type DashboardSummary = {
   pipelineValue: number;
@@ -42,4 +47,12 @@ export interface DataSource {
     update(id: string, patch: Partial<Omit<Activity, "id">>): Promise<Activity | null>;
   };
   dashboard: { summary(): Promise<DashboardSummary> };
+  widgets: {
+    list(p: ListWidgetsParams): Promise<WidgetSpec[]>;
+    get(id: string): Promise<WidgetSpec | null>;
+    create(data: Omit<WidgetSpec, "id" | "state" | "createdAt" | "approvedBy" | "approvedAt">): Promise<WidgetSpec>;
+    update(id: string, patch: Partial<Omit<WidgetSpec, "id" | "createdAt" | "createdBy">>): Promise<WidgetSpec | null>;
+    remove(id: string): Promise<boolean>;
+    transition(id: string, next: WidgetState, ctx: TransitionContext): Promise<WidgetSpec | null>;
+  };
 }

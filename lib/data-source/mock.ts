@@ -1,5 +1,7 @@
-import type { DataSource, DashboardSummary, ListOpportunitiesParams, ListContactsParams, ListActivitiesParams } from "./types";
+import type { DataSource, DashboardSummary, ListOpportunitiesParams, ListContactsParams, ListActivitiesParams, ListWidgetsParams, TransitionContext } from "./types";
 import type { Opportunity, Contact, Stage, Activity, User } from "@/lib/schemas/core";
+import { nanoid } from "nanoid";
+import type { WidgetSpec } from "@/lib/schemas/widgets";
 import stagesSeed from "@/data/seed/stages.json";
 import usersSeed from "@/data/seed/users.json";
 import contactsSeed from "@/data/seed/contacts.json";
@@ -16,8 +18,10 @@ export function makeMockDataSource(): DataSource {
   const contacts: Contact[] = [...(contactsSeed as Contact[])];
   const opportunities: Opportunity[] = [...(opportunitiesSeed as Opportunity[])];
   const activities: Activity[] = [...(activitiesSeed as Activity[])];
+  const widgets: WidgetSpec[] = [];
 
   const now = () => new Date().toISOString();
+  const widgetId = () => `w_${nanoid(10)}`;
 
   return {
     opportunities: {
@@ -97,6 +101,47 @@ export function makeMockDataSource(): DataSource {
         if (i === -1) return null;
         activities[i] = { ...activities[i], ...patch };
         return activities[i];
+      },
+    },
+    widgets: {
+      async list(p: ListWidgetsParams) {
+        return widgets.filter(w => {
+          if (p.state && w.state !== p.state) return false;
+          if (p.createdBy && w.createdBy !== p.createdBy) return false;
+          return true;
+        });
+      },
+      async get(id) { return widgets.find(w => w.id === id) ?? null; },
+      async create(data) {
+        const w = { ...data, id: widgetId(), state: "draft", createdAt: new Date().toISOString() } as WidgetSpec;
+        widgets.push(w);
+        return w;
+      },
+      async update(id, patch) {
+        const i = widgets.findIndex(w => w.id === id);
+        if (i === -1) return null;
+        widgets[i] = { ...widgets[i], ...patch } as WidgetSpec;
+        return widgets[i];
+      },
+      async remove(id) {
+        const i = widgets.findIndex(w => w.id === id);
+        if (i === -1) return false;
+        widgets.splice(i, 1);
+        return true;
+      },
+      async transition(id, next, ctx: TransitionContext) {
+        const i = widgets.findIndex(w => w.id === id);
+        if (i === -1) return null;
+        if (next === "published" && !ctx.isAdmin) {
+          throw new Error("admin role required to publish");
+        }
+        const patch: Partial<WidgetSpec> = { state: next };
+        if (next === "published") {
+          patch.approvedBy = ctx.by;
+          patch.approvedAt = new Date().toISOString();
+        }
+        widgets[i] = { ...widgets[i], ...patch } as WidgetSpec;
+        return widgets[i];
       },
     },
     dashboard: {
