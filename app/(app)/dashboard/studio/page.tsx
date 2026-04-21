@@ -24,7 +24,11 @@ function WidgetStudio() {
   const [prompt, setPrompt] = useState(initialPrompt);
   const [spec, setSpec] = useState<Partial<WidgetSpec>>({});
 
-  useEffect(() => { if (existing.data) setSpec(existing.data); }, [existing.data]);
+  useEffect(() => {
+    if (!existing.data) return;
+    setSpec(existing.data);
+    if (existing.data.prompt) setPrompt(existing.data.prompt);
+  }, [existing.data]);
 
   const gen = useGenerateWidget();
   const create = useCreateWidget();
