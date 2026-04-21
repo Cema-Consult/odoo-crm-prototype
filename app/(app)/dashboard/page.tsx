@@ -14,6 +14,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Phone, Mail, Calendar, CheckSquare, Star, ArrowRight } from "lucide-react";
+import { CustomWidgetsGrid } from "@/components/widgets/custom-widgets-grid";
 import { format, isPast, isToday, parseISO, startOfDay } from "date-fns";
 import clsx from "clsx";
 
@@ -86,6 +87,7 @@ export default function DashboardPage() {
               </span>
             )}
           </TabsTrigger>
+          <TabsTrigger value="custom">Custom widgets</TabsTrigger>
         </TabsList>
 
         {/* Pipeline health tab */}
@@ -205,6 +207,10 @@ export default function DashboardPage() {
               );
             })}
           </Section>
+        </TabsContent>
+
+        <TabsContent value="custom" className="mt-4">
+          <CustomWidgetsGrid />
         </TabsContent>
       </Tabs>
     </div>
