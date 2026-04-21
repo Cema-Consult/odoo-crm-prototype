@@ -1,11 +1,10 @@
 "use client";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Home, LayoutDashboard, Kanban, ListChecks, Users, Phone, Sparkles } from "lucide-react";
+import { LayoutDashboard, Kanban, ListChecks, Users, Phone, Sparkles } from "lucide-react";
 import clsx from "clsx";
 
 const NAV = [
-  { href: "/overview", label: "Overview", Icon: Home },
   { href: "/dashboard", label: "Dashboard", Icon: LayoutDashboard },
   { href: "/pipeline", label: "Pipeline", Icon: Kanban },
   { href: "/opportunities", label: "Opportunities", Icon: ListChecks },

@@ -1,2 +1,2 @@
 import { redirect } from "next/navigation";
-export default function RootRedirect() { redirect("/overview"); }
+export default function RootRedirect() { redirect("/dashboard"); }
