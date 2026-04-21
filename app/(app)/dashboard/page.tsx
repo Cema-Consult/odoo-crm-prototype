@@ -1,4 +1,5 @@
 "use client";
+import { useState } from "react";
 import Link from "next/link";
 import { useDashboardSummary } from "@/lib/api-client/dashboard";
 import { useActivities, useToggleActivity } from "@/lib/api-client/activities";
@@ -23,7 +24,14 @@ const ACTIVITY_ICON = { call: Phone, email: Mail, meeting: Calendar, todo: Check
 const fmt = (n: number, cur = "EUR") =>
   new Intl.NumberFormat("en-GB", { style: "currency", currency: cur, maximumFractionDigits: 0 }).format(n);
 
+const VALID_TABS = new Set(["pipeline", "tasks", "custom"]);
+
 export default function DashboardPage() {
+  const [initialTab] = useState<string>(() => {
+    if (typeof window === "undefined") return "pipeline";
+    const t = new URLSearchParams(window.location.search).get("tab");
+    return t && VALID_TABS.has(t) ? t : "pipeline";
+  });
   const { data, isLoading } = useDashboardSummary();
   const acts = useActivities().data ?? [];
   const opps = useOpportunities().data ?? [];
@@ -76,7 +84,7 @@ export default function DashboardPage() {
         </p>
       </header>
 
-      <Tabs defaultValue="pipeline">
+      <Tabs defaultValue={initialTab}>
         <TabsList>
           <TabsTrigger value="pipeline">Pipeline health</TabsTrigger>
           <TabsTrigger value="tasks">

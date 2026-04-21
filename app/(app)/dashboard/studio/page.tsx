@@ -47,9 +47,16 @@ function WidgetStudio() {
       } else {
         const created = await create.mutateAsync(spec);
         if (nextState) await transition.mutateAsync({ id: created.id, next: nextState });
-        router.replace(`/dashboard/studio?id=${created.id}`);
+        if (nextState !== "published") {
+          router.replace(`/dashboard/studio?id=${created.id}`);
+        }
       }
-      toast.success(nextState ? `Moved to ${nextState}` : "Saved");
+      if (nextState === "published") {
+        toast.success("Published — taking you to the dashboard");
+        router.push("/dashboard?tab=custom");
+      } else {
+        toast.success(nextState ? `Moved to ${nextState}` : "Saved");
+      }
     } catch (e) { toast.error((e as Error).message); }
   };
 
