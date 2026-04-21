@@ -18,6 +18,14 @@ Login with any email + password (or click **"Use demo credentials"**).
 - **⌘K global palette** — jump to any opportunity or contact by name
 - **Mock REST API** — all reads/writes go through `/api/*` route handlers backed by in-memory seed data (30 deals, 60 contacts, 80 activities)
 
+### AI Widget Builder
+
+Admins can generate dashboard widgets from a natural-language prompt via `/dashboard/studio`. Behind the scenes, `POST /api/widgets/generate` calls Claude with tool use to emit one of 6 widget types (`stat_tile`, `bar_chart`, `line_chart`, `pie_chart`, `record_table`, `activity_feed`), parsed against a Zod discriminated union. The resulting spec renders deterministically via `<WidgetRenderer>` on the dashboard's Custom widgets tab.
+
+Requires `ANTHROPIC_API_KEY` in the environment. Non-admins see a 403 when calling `/api/widgets/generate`.
+
+Lifecycle: `draft → pending_review → published → archived`. Only admins can transition to `published`. A "Copy review link" button in the Studio produces a shareable read-only URL (`/dashboard/widget/:id?ro=1`).
+
 ## Stack
 
 - Next.js 16 (app router), React 19, TypeScript
