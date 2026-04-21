@@ -75,7 +75,10 @@ function WidgetStudio() {
         {/* Left: prompt + editor */}
         <div className="space-y-4 overflow-auto pr-2">
           <div>
-            <label className="text-sm font-medium mb-2 block">Describe your widget</label>
+            <div className="flex items-center gap-2 mb-2">
+              <Sparkles className="h-4 w-4 text-accent" />
+              <label className="text-sm font-medium">Ask AI to build a widget</label>
+            </div>
             <AutocompleteTextarea
               rows={3}
               value={prompt}
