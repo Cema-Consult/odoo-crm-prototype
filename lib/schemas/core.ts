@@ -10,11 +10,13 @@ export const Stage = z.object({
   fold: z.boolean(),
 });
 
+export const Role = z.enum(["admin", "viewer"]);
 export const User = z.object({
   id: z.string(),
   name: z.string(),
   email: z.email(),
   avatar: z.string(),
+  role: Role.default("viewer"),
 });
 
 export const Contact = z.object({
@@ -59,6 +61,7 @@ export const Activity = z.object({
 
 export type Stage = z.infer<typeof Stage>;
 export type User = z.infer<typeof User>;
+export type Role = z.infer<typeof Role>;
 export type Contact = z.infer<typeof Contact>;
 export type Opportunity = z.infer<typeof Opportunity>;
 export type Activity = z.infer<typeof Activity>;
