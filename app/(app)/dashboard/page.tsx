@@ -1,5 +1,6 @@
 "use client";
-import { useState } from "react";
+import { Suspense } from "react";
+import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { useDashboardSummary } from "@/lib/api-client/dashboard";
 import { useActivities, useToggleActivity } from "@/lib/api-client/activities";
@@ -26,12 +27,11 @@ const fmt = (n: number, cur = "EUR") =>
 
 const VALID_TABS = new Set(["pipeline", "tasks", "custom"]);
 
-export default function DashboardPage() {
-  const [initialTab] = useState<string>(() => {
-    if (typeof window === "undefined") return "pipeline";
-    const t = new URLSearchParams(window.location.search).get("tab");
-    return t && VALID_TABS.has(t) ? t : "pipeline";
-  });
+function DashboardContent() {
+  const searchParams = useSearchParams();
+  const tabParam = searchParams.get("tab");
+  const activeTab = tabParam && VALID_TABS.has(tabParam) ? tabParam : "pipeline";
+
   const { data, isLoading } = useDashboardSummary();
   const acts = useActivities().data ?? [];
   const opps = useOpportunities().data ?? [];
@@ -84,7 +84,7 @@ export default function DashboardPage() {
         </p>
       </header>
 
-      <Tabs defaultValue={initialTab}>
+      <Tabs key={activeTab} defaultValue={activeTab}>
         <TabsList>
           <TabsTrigger value="pipeline">Pipeline health</TabsTrigger>
           <TabsTrigger value="tasks">
@@ -222,6 +222,14 @@ export default function DashboardPage() {
         </TabsContent>
       </Tabs>
     </div>
+  );
+}
+
+export default function DashboardPage() {
+  return (
+    <Suspense fallback={<div className="p-6 text-text-muted">Loading…</div>}>
+      <DashboardContent />
+    </Suspense>
   );
 }
 
