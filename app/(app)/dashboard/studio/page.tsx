@@ -1,8 +1,7 @@
 "use client";
-import { useState, useEffect, Suspense } from "react";
+import { useState, useEffect, useMemo, Suspense } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
-import { Textarea } from "@/components/ui/textarea";
 import { Sparkles, Copy } from "lucide-react";
 import Link from "next/link";
 import { toast } from "sonner";
@@ -11,6 +10,9 @@ import { useGenerateWidget, useCreateWidget, useUpdateWidget, useTransitionWidge
 import { WidgetRenderer } from "@/lib/widgets/renderer";
 import { StudioEditor } from "@/components/widgets/studio-editor";
 import { ExampleGallery } from "@/components/widgets/example-gallery";
+import { AutocompleteTextarea } from "@/components/widgets/autocomplete-textarea";
+import { FieldsReference } from "@/components/widgets/fields-reference";
+import { getAutocompleteOptions } from "@/lib/widgets/field-catalog";
 
 function WidgetStudio() {
   const params = useSearchParams();
@@ -59,6 +61,7 @@ function WidgetStudio() {
   };
 
   const canRender = spec.type && (spec as any).dataSource;
+  const autocompleteOptions = useMemo(() => getAutocompleteOptions(), []);
 
   return (
     <div className="p-6 h-full">
@@ -73,24 +76,27 @@ function WidgetStudio() {
         <div className="space-y-4 overflow-auto pr-2">
           <div>
             <label className="text-sm font-medium mb-2 block">Describe your widget</label>
-            <Textarea
+            <AutocompleteTextarea
               rows={3}
               value={prompt}
-              onChange={(e) => setPrompt(e.target.value)}
-              placeholder="e.g. Bar chart of won deals by salesperson last 6 months"
-              className="w-full"
+              onChange={setPrompt}
+              options={autocompleteOptions}
+              placeholder="e.g. Bar chart of won deals by salesperson last 6 months — type // for field autocomplete"
             />
-            <div className="flex gap-2 mt-2">
+            <div className="flex items-center gap-2 mt-2">
               <Button onClick={() => generate(prompt)} disabled={gen.isPending || prompt.length < 3}>
                 <Sparkles className="h-4 w-4 mr-1" />{gen.isPending ? "Generating…" : "Generate"}
               </Button>
+              <div className="text-xs text-text-muted">
+                Tip: type <code className="bg-surface-muted px-1 py-0.5 rounded">//</code> to pick a field or value.
+              </div>
             </div>
           </div>
 
           {!spec.type && (
             <div>
               <div className="text-xs uppercase text-text-muted mb-2">Try one of these</div>
-              <ExampleGallery onPick={(p) => { setPrompt(p); generate(p); }} />
+              <ExampleGallery onPick={setPrompt} />
             </div>
           )}
 
@@ -110,6 +116,8 @@ function WidgetStudio() {
             <Button size="sm" onClick={() => save("published")}>Approve & publish</Button>
             <Button variant="ghost" size="sm" onClick={copyReviewLink}><Copy className="h-4 w-4 mr-1" />Copy review link</Button>
           </div>
+
+          <FieldsReference />
         </div>
       </div>
     </div>
