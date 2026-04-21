@@ -12,6 +12,7 @@ import { ForecastChart } from "@/components/dashboard/forecast-chart";
 import { RecentlyWon } from "@/components/dashboard/recently-won";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Badge } from "@/components/ui/badge";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Phone, Mail, Calendar, CheckSquare, Star, ArrowRight } from "lucide-react";
 import { format, isPast, isToday, parseISO, startOfDay } from "date-fns";
 import clsx from "clsx";
@@ -70,133 +71,142 @@ export default function DashboardPage() {
         <p className="text-text-muted text-sm">
           {totalActionable === 0
             ? "You're all caught up. Nothing needs your attention today."
-            : `You have ${totalActionable} item${totalActionable === 1 ? "" : "s"} waiting — ${overdue.length} overdue, ${today.length} today, ${hotDeals.length} hot deal${hotDeals.length === 1 ? "" : "s"} without activity.`}
+            : `${totalActionable} task${totalActionable === 1 ? "" : "s"} waiting — ${overdue.length} overdue, ${today.length} today, ${hotDeals.length} hot deal${hotDeals.length === 1 ? "" : "s"} without activity.`}
         </p>
       </header>
 
-      {/* Action queue */}
-      <div className="space-y-4">
-        <Section
-          title="Overdue"
-          subtitle="These need your attention now"
-          tone="danger"
-          empty="No overdue activities — well done."
-          count={overdue.length}
-        >
-          {overdue.map(a => {
-            const Icon = ACTIVITY_ICON[a.type];
-            const opp = oppsById.get(a.opportunityId);
-            const who = users.find(u => u.id === a.assignedTo)?.name ?? "—";
-            return (
-              <Row
-                key={a.id}
-                leading={<Checkbox checked={a.done} onCheckedChange={v => toggle.mutate({ id: a.id, done: !!v })} />}
-                icon={<Icon className="h-4 w-4 text-danger" />}
-                title={a.summary}
-                meta={
-                  <>
-                    {opp && <Link href={`/opportunities/${opp.id}`} className="hover:text-text truncate max-w-[260px]">{opp.name}</Link>}
-                    <span>·</span>
-                    <span>{format(parseISO(a.scheduledAt), "MMM d, HH:mm")}</span>
-                    <span>·</span>
-                    <span>{who}</span>
-                  </>
-                }
-                right={<span className="text-xs text-danger font-medium">overdue</span>}
-              />
-            );
-          })}
-        </Section>
+      <Tabs defaultValue="pipeline">
+        <TabsList>
+          <TabsTrigger value="pipeline">Pipeline health</TabsTrigger>
+          <TabsTrigger value="tasks">
+            My tasks
+            {totalActionable > 0 && (
+              <span className="ml-2 text-[10px] font-semibold rounded-full bg-accent/20 text-accent px-1.5 py-0.5 leading-none">
+                {totalActionable}
+              </span>
+            )}
+          </TabsTrigger>
+        </TabsList>
 
-        <Section
-          title="Today"
-          subtitle="Scheduled for today"
-          tone="accent"
-          empty="Nothing scheduled for today."
-          count={today.length}
-        >
-          {today.map(a => {
-            const Icon = ACTIVITY_ICON[a.type];
-            const opp = oppsById.get(a.opportunityId);
-            const who = users.find(u => u.id === a.assignedTo)?.name ?? "—";
-            return (
-              <Row
-                key={a.id}
-                leading={<Checkbox checked={a.done} onCheckedChange={v => toggle.mutate({ id: a.id, done: !!v })} />}
-                icon={<Icon className="h-4 w-4 text-accent" />}
-                title={a.summary}
-                meta={
-                  <>
-                    {opp && <Link href={`/opportunities/${opp.id}`} className="hover:text-text truncate max-w-[260px]">{opp.name}</Link>}
-                    <span>·</span>
-                    <span>{format(parseISO(a.scheduledAt), "HH:mm")}</span>
-                    <span>·</span>
-                    <span>{who}</span>
-                  </>
-                }
-              />
-            );
-          })}
-        </Section>
+        {/* Pipeline health tab */}
+        <TabsContent value="pipeline" className="space-y-5 mt-4">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+            <StatTile label="Pipeline value" value={fmt(data.pipelineValue)} />
+            <StatTile label="Won this month" value={fmt(data.wonThisMonth)} />
+            <StatTile label="Activities today" value={data.activitiesToday} />
+            <StatTile label="New leads this week" value={data.newLeadsThisWeek} />
+          </div>
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+            <FunnelChart data={data.funnel} />
+            <ForecastChart data={data.forecast} />
+          </div>
+          <div>
+            <RecentlyWon items={data.recentlyWon} />
+          </div>
+        </TabsContent>
 
-        <Section
-          title="Hot deals without activity"
-          subtitle="High-priority opportunities that have gone quiet"
-          tone="warning"
-          empty="Every high-priority deal has an upcoming activity."
-          count={hotDeals.length}
-        >
-          {hotDeals.map(o => {
-            const contact = contactsById.get(o.partnerId);
-            return (
-              <Link
-                key={o.id}
-                href={`/opportunities/${o.id}`}
-                className="flex items-center gap-3 py-2.5 border-b border-border last:border-0 hover:bg-surface-muted/40 -mx-5 px-5"
-              >
-                <div className="flex-1 min-w-0">
-                  <div className="text-sm font-medium truncate">{o.name}</div>
-                  <div className="flex items-center gap-2 text-xs text-text-muted mt-0.5">
-                    <span>{contact?.name ?? "—"}</span>
-                    <span>·</span>
-                    <Badge variant="outline" className="text-[10px] py-0 h-4">{stagesById.get(o.stageId)?.name}</Badge>
-                    <span>·</span>
-                    <span>{o.currency} {o.expectedRevenue.toLocaleString()}</span>
+        {/* My tasks tab */}
+        <TabsContent value="tasks" className="space-y-4 mt-4">
+          <Section
+            title="Overdue"
+            subtitle="These need your attention now"
+            tone="danger"
+            empty="No overdue activities — well done."
+            count={overdue.length}
+          >
+            {overdue.map(a => {
+              const Icon = ACTIVITY_ICON[a.type];
+              const opp = oppsById.get(a.opportunityId);
+              const who = users.find(u => u.id === a.assignedTo)?.name ?? "—";
+              return (
+                <Row
+                  key={a.id}
+                  leading={<Checkbox checked={a.done} onCheckedChange={v => toggle.mutate({ id: a.id, done: !!v })} />}
+                  icon={<Icon className="h-4 w-4 text-danger" />}
+                  title={a.summary}
+                  meta={
+                    <>
+                      {opp && <Link href={`/opportunities/${opp.id}`} className="hover:text-text truncate max-w-[260px]">{opp.name}</Link>}
+                      <span>·</span>
+                      <span>{format(parseISO(a.scheduledAt), "MMM d, HH:mm")}</span>
+                      <span>·</span>
+                      <span>{who}</span>
+                    </>
+                  }
+                  right={<span className="text-xs text-danger font-medium">overdue</span>}
+                />
+              );
+            })}
+          </Section>
+
+          <Section
+            title="Today"
+            subtitle="Scheduled for today"
+            tone="accent"
+            empty="Nothing scheduled for today."
+            count={today.length}
+          >
+            {today.map(a => {
+              const Icon = ACTIVITY_ICON[a.type];
+              const opp = oppsById.get(a.opportunityId);
+              const who = users.find(u => u.id === a.assignedTo)?.name ?? "—";
+              return (
+                <Row
+                  key={a.id}
+                  leading={<Checkbox checked={a.done} onCheckedChange={v => toggle.mutate({ id: a.id, done: !!v })} />}
+                  icon={<Icon className="h-4 w-4 text-accent" />}
+                  title={a.summary}
+                  meta={
+                    <>
+                      {opp && <Link href={`/opportunities/${opp.id}`} className="hover:text-text truncate max-w-[260px]">{opp.name}</Link>}
+                      <span>·</span>
+                      <span>{format(parseISO(a.scheduledAt), "HH:mm")}</span>
+                      <span>·</span>
+                      <span>{who}</span>
+                    </>
+                  }
+                />
+              );
+            })}
+          </Section>
+
+          <Section
+            title="Hot deals without activity"
+            subtitle="High-priority opportunities that have gone quiet"
+            tone="warning"
+            empty="Every high-priority deal has an upcoming activity."
+            count={hotDeals.length}
+          >
+            {hotDeals.map(o => {
+              const contact = contactsById.get(o.partnerId);
+              return (
+                <Link
+                  key={o.id}
+                  href={`/opportunities/${o.id}`}
+                  className="flex items-center gap-3 py-2.5 border-b border-border last:border-0 hover:bg-surface-muted/40 -mx-5 px-5"
+                >
+                  <div className="flex-1 min-w-0">
+                    <div className="text-sm font-medium truncate">{o.name}</div>
+                    <div className="flex items-center gap-2 text-xs text-text-muted mt-0.5">
+                      <span>{contact?.name ?? "—"}</span>
+                      <span>·</span>
+                      <Badge variant="outline" className="text-[10px] py-0 h-4">{stagesById.get(o.stageId)?.name}</Badge>
+                      <span>·</span>
+                      <span>{o.currency} {o.expectedRevenue.toLocaleString()}</span>
+                    </div>
                   </div>
-                </div>
-                <div className="flex items-center gap-1">
-                  {Array.from({ length: 3 }).map((_, i) => (
-                    <Star key={i} className={clsx("h-3 w-3", i < o.priority ? "text-warning fill-warning" : "text-text-muted")} />
-                  ))}
-                </div>
-                <ArrowRight className="h-4 w-4 text-text-muted" />
-              </Link>
-            );
-          })}
-        </Section>
-      </div>
-
-      {/* Divider */}
-      <div className="flex items-center gap-3 pt-2">
-        <div className="h-px bg-border flex-1" />
-        <span className="text-xs uppercase tracking-wide text-text-muted">Pipeline health</span>
-        <div className="h-px bg-border flex-1" />
-      </div>
-
-      {/* Stats + charts */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <StatTile label="Pipeline value" value={fmt(data.pipelineValue)} />
-        <StatTile label="Won this month" value={fmt(data.wonThisMonth)} />
-        <StatTile label="Activities today" value={data.activitiesToday} />
-        <StatTile label="New leads this week" value={data.newLeadsThisWeek} />
-      </div>
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-        <FunnelChart data={data.funnel} />
-        <ForecastChart data={data.forecast} />
-      </div>
-      <div>
-        <RecentlyWon items={data.recentlyWon} />
-      </div>
+                  <div className="flex items-center gap-1">
+                    {Array.from({ length: 3 }).map((_, i) => (
+                      <Star key={i} className={clsx("h-3 w-3", i < o.priority ? "text-warning fill-warning" : "text-text-muted")} />
+                    ))}
+                  </div>
+                  <ArrowRight className="h-4 w-4 text-text-muted" />
+                </Link>
+              );
+            })}
+          </Section>
+        </TabsContent>
+      </Tabs>
     </div>
   );
 }
